@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Focus Browser — storyboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body data-stage="intent">
+
+<!-- The agreement bar: pinned from the moment the task starts. -->
+<header class="bar" aria-label="Your agreement">
+  <div class="bar-goal">
+    <span class="bar-label">Goal</span>
+    <span>Plan Saturday's hike with Sam, Ana &amp; Jo</span>
+  </div>
+  <ol class="bar-stages" aria-label="Progress">
+    <li data-s="explore">Explore</li>
+    <li data-s="compare">Compare</li>
+    <li data-s="act">Act</li>
+    <li data-s="done">Done</li>
+  </ol>
+  <div class="bar-right">
+    <button class="shelf-btn" type="button" aria-label="Saved for later">Saved <span class="shelf-count">0</span></button>
+    <button class="blocked-btn" type="button">I'm blocked</button>
+    <div class="timer" aria-label="Time left"><span class="timer-min">25</span> min left</div>
+  </div>
+</header>
+
+<main>
+
+  <!-- 1. Intent -->
+  <section class="stage" id="intent" aria-label="Intent">
+    <div class="intent-wrap">
+      <h1>What are you trying to do?</h1>
+      <label class="visually-hidden" for="intent-input">Your intent</label>
+      <div class="intent-field">
+        <span id="intent-input" class="typed" aria-live="polite"></span><span class="caret"></span>
+      </div>
+      <p class="intent-hint">Firefox opens here every time. Everything else waits until you say.</p>
+    </div>
+  </section>
+
+  <!-- 2. Agreement -->
+  <section class="stage" id="agreement" aria-label="Agreement">
+    <div class="agreement">
+      <p class="eyebrow">Here's the plan. Change anything.</p>
+      <h2>Plan Saturday's hike with Sam, Ana &amp; Jo</h2>
+      <dl>
+        <div><dt>Done when</dt><dd contenteditable="true">A trail, a start time and a carpool are sent to the group</dd></div>
+        <div><dt>Time</dt><dd contenteditable="true">25 minutes</dd></div>
+        <div><dt>Looks for</dt><dd contenteditable="true">Under 2 hours' drive from Denver · dogs allowed · Saturday</dd></div>
+        <div><dt>Sources</dt><dd>
+          <span class="chip on">Trail sites</span><span class="chip on">Weather</span><span class="chip on">Maps</span><span class="chip on">Park services</span><span class="chip off">Social</span><span class="chip off">News</span><span class="chip off">Shopping</span>
+        </dd></div>
+        <div><dt>Afterwards</dt><dd contenteditable="true">Close for 2 hours</dd></div>
+      </dl>
+      <button class="primary" type="button" data-go="explore">Start</button>
+    </div>
+  </section>
+
+  <!-- 3–5. Explore / Compare / Detour share one workspace that rebuilds itself. -->
+  <section class="stage workspace" id="work" aria-label="Workspace">
+    <div class="col col-map">
+      <svg class="map" viewBox="0 0 400 520" role="img" aria-label="Map of trails west of Boulder">
+        <defs>
+          <pattern id="contour" width="400" height="520" patternUnits="userSpaceOnUse">
+            <path d="M-20 80 C 80 40, 160 120, 260 70 S 420 60, 430 90" />
+            <path d="M-20 150 C 60 110, 170 190, 270 140 S 420 140, 430 170" />
+            <path d="M-20 230 C 90 190, 150 270, 260 220 S 420 220, 430 250" />
+            <path d="M-20 310 C 70 270, 180 350, 280 300 S 420 300, 430 330" />
+            <path d="M-20 390 C 80 350, 160 430, 270 380 S 420 380, 430 410" />
+            <path d="M-20 470 C 90 430, 170 510, 280 460 S 420 460, 430 490" />
+          </pattern>
+        </defs>
+        <rect width="400" height="520" fill="url(#contour)" class="contours"/>
+        <path class="road" d="M400 300 C 330 290, 300 250, 250 240 S 170 200, 120 120"/>
+        <text x="330" y="285" class="place">Boulder</text>
+        <g class="pin" data-trail="sanitas"><circle cx="230" cy="190" r="9"/><text x="244" y="194">Mt Sanitas</text></g>
+        <g class="pin" data-trail="royal"><circle cx="215" cy="300" r="9"/><text x="229" y="304">Royal Arch</text></g>
+        <g class="pin" data-trail="bluebell"><circle cx="200" cy="270" r="9"/><text x="120" y="262">Bluebell</text></g>
+        <g class="pin" data-trail="walker"><circle cx="110" cy="360" r="9"/><text x="124" y="364">Walker Ranch</text></g>
+        <g class="pin" data-trail="rattlesnake"><circle cx="190" cy="430" r="9"/><text x="204" y="434">Rattlesnake Gulch</text></g>
+      </svg>
+      <form class="ask" onsubmit="return false">
+        <label class="visually-hidden" for="ask">Ask about these trails</label>
+        <input id="ask" placeholder="Ask about these trails…" value="">
+      </form>
+    </div>
+
+    <div class="col col-trails">
+      <p class="col-title explore-only">5 trails match</p>
+      <p class="col-title compare-only">Your two finalists <button class="link set-aside" type="button">3 set aside</button></p>
+      <ul class="trails">
+        <li class="trail" data-trail="sanitas" data-final>
+          <h3>Mount Sanitas</h3>
+          <p class="facts"><span>3.1 mi loop</span><span>1,300 ft</span><span>35 min drive</span></p>
+          <p class="dog">Dogs on leash</p>
+          <dl class="compare-rows">
+            <div><dt>Saturday</dt><dd><span class="wx">☀ 58°</span> clear morning, wind after 1pm</dd></div>
+            <div><dt>Parking</dt><dd>Small lot, full by 8:30. Street parking on Mapleton</dd></div>
+            <div><dt>Feels like</dt><dd>Steep and short. Views over Boulder</dd></div>
+          </dl>
+        </li>
+        <li class="trail" data-trail="royal">
+          <h3>Royal Arch</h3>
+          <p class="facts"><span>3.4 mi</span><span>1,400 ft</span><span>40 min drive</span></p>
+          <p class="dog">Dogs on leash</p>
+        </li>
+        <li class="trail" data-trail="bluebell">
+          <h3>Chautauqua to Bluebell</h3>
+          <p class="facts"><span>2.0 mi</span><span>600 ft</span><span>35 min drive</span></p>
+          <p class="dog">Dogs on leash</p>
+        </li>
+        <li class="trail" data-trail="walker" data-final>
+          <h3>Walker Ranch Loop</h3>
+          <p class="facts"><span>7.6 mi loop</span><span>1,600 ft</span><span>55 min drive</span></p>
+          <p class="dog">Dogs on leash</p>
+          <dl class="compare-rows">
+            <div><dt>Saturday</dt><dd><span class="wx">⛅ 54°</span> cloud by noon, dry</dd></div>
+            <div><dt>Parking</dt><dd>Large lot, rarely full</dd></div>
+            <div><dt>Feels like</dt><dd>Long and varied. Creek crossing, quiet</dd></div>
+          </dl>
+        </li>
+        <li class="trail" data-trail="rattlesnake">
+          <h3>Rattlesnake Gulch</h3>
+          <p class="facts"><span>3.6 mi</span><span>1,000 ft</span><span>45 min drive</span></p>
+          <p class="dog">Dogs on leash · park fee</p>
+        </li>
+      </ul>
+    </div>
+
+    <div class="col col-site">
+      <div class="site-chrome">
+        <span class="site-host">bouldercolorado.gov</span>
+        <span class="site-note">Ads, feeds and related links removed</span>
+      </div>
+      <article class="site-page">
+        <p class="site-kicker">Open Space &amp; Mountain Parks</p>
+        <h3>Mount Sanitas Trail</h3>
+        <p><strong>Conditions:</strong> Dry. Some loose rock on the east ridge.</p>
+        <p><strong>Dogs:</strong> Must be on leash. Voice and sight tag not valid on this trail.</p>
+        <p><strong>Parking:</strong> Mount Sanitas trailhead, 4th St &amp; Mapleton Ave. Lot fills early on weekends.</p>
+        <p class="site-related">You might also like: <a href="#" class="boots-link">Best hiking boots of 2026 →</a></p>
+      </article>
+      <p class="site-source">Real page, shown in the panel. Mock content.</p>
+    </div>
+
+    <!-- The detour prompt -->
+    <div class="detour" role="dialog" aria-labelledby="detour-title" hidden>
+      <div class="detour-card">
+        <p class="eyebrow">Off your plan</p>
+        <h3 id="detour-title">“Best hiking boots of 2026” isn't part of planning the hike.</h3>
+        <div class="detour-actions">
+          <button class="primary" type="button" data-detour="save">Save for later</button>
+          <button type="button" data-detour="quick">Quick look · 3 min</button>
+          <button type="button" data-detour="new">Make it a new task</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. Act -->
+  <section class="stage act" id="act" aria-label="Act">
+    <div class="act-main">
+      <p class="eyebrow">Send it</p>
+      <div class="message">
+        <p class="to">To: Sam, Ana, Jo</p>
+        <p contenteditable="true">Saturday hike: <strong>Mount Sanitas</strong> loop, 3.1 mi, dogs on leash. Clear morning, windy after 1. Parking fills by 8:30, so let's be early. I can drive two.</p>
+        <div class="poll">
+          <p>Start time?</p>
+          <label><input type="radio" name="t" checked> 7:45</label>
+          <label><input type="radio" name="t"> 8:15</label>
+        </div>
+        <button class="primary" type="button" data-go="done">Send to group</button>
+      </div>
+    </div>
+    <aside class="act-side">
+      <p class="eyebrow">Bring</p>
+      <ul class="checklist">
+        <li><label><input type="checkbox" checked> Water, 1L each</label></li>
+        <li><label><input type="checkbox"> Leash and water for the dog</label></li>
+        <li><label><input type="checkbox"> Wind layer</label></li>
+      </ul>
+    </aside>
+  </section>
+
+  <!-- 7. Done -->
+  <section class="stage done" id="done" aria-label="Done">
+    <div class="done-wrap">
+      <p class="eyebrow">Plan sent · 19 minutes</p>
+      <h1>See you on the trail.</h1>
+      <p class="done-saved">Saved for later: <span class="shelf-list">nothing</span></p>
+      <p class="done-close">Firefox closes in <span class="countdown">10</span>s and opens again at 4:12 pm.</p>
+      <p class="done-ask">Who are you seeing today?</p>
+    </div>
+  </section>
+
+</main>
+
+<!-- Storyboard strip: not part of the product. -->
+<footer class="story" aria-label="Storyboard">
+  <button type="button" class="story-prev" aria-label="Previous stage">←</button>
+  <div class="story-text">
+    <p class="story-step"></p>
+    <p class="story-note"></p>
+  </div>
+  <button type="button" class="story-next" aria-label="Next stage">→</button>
+</footer>
+
+<script src="story.js"></script>
+</body>
+</html>

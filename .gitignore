@@ -1,0 +1,13 @@
+# Working notes, kept local.
+PLAN.md
+
+node_modules/
+.DS_Store
+
+# Screenshots and reports from test runs.
+test-results/
+
+# Secrets never go in the repo. The API key lives in the shell or in .env.
+.env
+.env.*
+!.env.example

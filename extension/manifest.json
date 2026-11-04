@@ -1,0 +1,37 @@
+{
+  "manifest_version": 3,
+  "name": "Focus Browser",
+  "version": "0.1.0",
+  "description": "Asks what you're trying to do, builds the interface for it, keeps everything else out.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "focus-browser@fotw.mozilla.org",
+      "strict_min_version": "128.0"
+    }
+  },
+  "permissions": [
+    "webRequest",
+    "declarativeNetRequestWithHostAccess",
+    "storage"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "scripts": [
+      "background.js"
+    ]
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "frame-probe.js"
+      ],
+      "all_frames": true,
+      "run_at": "document_idle"
+    }
+  ]
+}

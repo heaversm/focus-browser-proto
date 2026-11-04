@@ -1,0 +1,12 @@
+{
+  "name": "focus-browser",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:site-pane": "node tests/site-pane.mjs",
+    "shots:mockup": "node tests/mockup-shots.mjs"
+  },
+  "devDependencies": {
+    "puppeteer": "25.13.0"
+  }
+}
