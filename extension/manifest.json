@@ -33,5 +33,11 @@
       "all_frames": true,
       "run_at": "document_idle"
     }
-  ]
+  ],
+  "chrome_url_overrides": {
+    "newtab": "app/index.html"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
 }

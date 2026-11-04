@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Focus</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body data-screen="intent">
+
+<header class="bar" aria-label="Your agreement">
+  <div class="bar-goal"><span class="bar-label">Goal</span><span id="bar-goal"></span></div>
+  <ol class="bar-stages" id="bar-stages" aria-label="Progress"></ol>
+  <div class="bar-right">
+    <span class="focus-chip" id="focus-chip" hidden>Mac Focus on</span>
+    <button type="button" id="shelf-btn" aria-haspopup="dialog">Saved <span class="count" id="shelf-count">0</span></button>
+    <button type="button" id="blocked-btn">I'm blocked</button>
+    <div class="clock" id="clock" aria-live="off"></div>
+  </div>
+</header>
+
+<main>
+  <!-- Intent -->
+  <section class="screen" id="intent">
+    <form class="intent" id="intent-form">
+      <h1><label for="intent-input">What are you trying to do?</label></h1>
+      <input id="intent-input" autocomplete="off" required placeholder="Plan a hike this Saturday with Sam, Ana and Jo…">
+      <p class="hint" id="intent-hint">Firefox opens here every time. Everything else waits until you say.</p>
+    </form>
+  </section>
+
+  <!-- Agreement -->
+  <section class="screen" id="agreement">
+    <form class="agreement" id="agreement-form">
+      <p class="eyebrow">Here's the plan. Change anything.</p>
+      <h2 contenteditable="true" id="ag-goal" spellcheck="false"></h2>
+      <dl>
+        <div><dt>Done when</dt><dd><span contenteditable="true" id="ag-done"></span><small class="check" id="ag-check"></small></dd></div>
+        <div><dt>Time</dt><dd><input type="number" id="ag-minutes" min="5" max="120" step="5"> minutes · wrap up by <span id="ag-by"></span>, one 5-minute extension</dd></div>
+        <div><dt>Looks for</dt><dd contenteditable="true" id="ag-looks"></dd></div>
+        <div><dt>Sources</dt><dd><div id="ag-sources"></div>
+          <div class="add-source"><input id="ag-add" placeholder="Add a site, e.g. alltrails.com"><button type="button" id="ag-add-btn">Add</button></div>
+          <small class="check">Everything else stays closed.</small></dd></div>
+        <div><dt>Afterwards</dt><dd>Close Firefox for <input type="number" id="ag-cooldown" min="0" max="480" step="15"> minutes
+          <label class="inline"><input type="checkbox" id="ag-focus" checked> Turn on Mac Focus while I work</label></dd></div>
+      </dl>
+      <button class="primary" type="submit">Start</button>
+    </form>
+  </section>
+
+  <!-- Workspace -->
+  <section class="screen" id="work">
+    <div class="work-main">
+      <h2 class="headline" id="headline"></h2>
+      <div class="pieces" id="pieces"></div>
+      <form class="ask" id="ask-form">
+        <div class="suggestions" id="suggestions"></div>
+        <input id="ask-input" autocomplete="off" placeholder="Ask, or steer: “only loops”, “closer to Denver”…">
+      </form>
+    </div>
+    <aside class="reader" id="reader" hidden>
+      <div class="reader-bar">
+        <span class="reader-host" id="reader-host"></span>
+        <button type="button" class="link" id="reader-original">Show original</button>
+        <button type="button" class="link" id="reader-close" aria-label="Close page">Close</button>
+      </div>
+      <iframe id="reader-frame" title="Page"></iframe>
+    </aside>
+    <div class="working" id="working" hidden><span class="dot"></span><span id="working-text">Working on it…</span></div>
+  </section>
+
+  <!-- Done -->
+  <section class="screen done" id="done">
+    <div class="done-wrap">
+      <p class="eyebrow" id="done-eyebrow"></p>
+      <h1 id="done-title">Done.</h1>
+      <p id="done-what"></p>
+      <p id="done-saved"></p>
+      <p id="done-close"></p>
+      <p class="done-ask">Who are you seeing today?</p>
+    </div>
+  </section>
+
+  <!-- Cool-down -->
+  <section class="screen done" id="cooldown">
+    <div class="done-wrap">
+      <p class="eyebrow">Taking a break</p>
+      <h1>Back at <span id="cool-until"></span>.</h1>
+      <p id="cool-saved"></p>
+    </div>
+  </section>
+</main>
+
+<!-- Prompts -->
+<div class="overlay" id="detour" hidden role="dialog" aria-labelledby="detour-title">
+  <div class="card">
+    <p class="eyebrow">Off your plan</p>
+    <h3 id="detour-title"></h3>
+    <p class="muted" id="detour-reason"></p>
+    <div class="actions">
+      <button class="primary" type="button" data-detour="save">Save for later</button>
+      <button type="button" data-detour="quick">Quick look · 3 min</button>
+      <button type="button" data-detour="cancel">Back to the plan</button>
+    </div>
+  </div>
+</div>
+<div class="overlay" id="timeup" hidden role="dialog" aria-labelledby="timeup-title">
+  <div class="card">
+    <p class="eyebrow">Time's up</p>
+    <h3 id="timeup-title">Wrap up, or stop here?</h3>
+    <div class="actions">
+      <button class="primary" type="button" id="timeup-extend">5 more minutes</button>
+      <button type="button" id="timeup-stop">Stop now</button>
+    </div>
+  </div>
+</div>
+<div class="overlay" id="shelf" hidden role="dialog" aria-labelledby="shelf-title">
+  <div class="card">
+    <p class="eyebrow">Saved for later</p>
+    <h3 id="shelf-title">For your next break</h3>
+    <ul id="shelf-list"></ul>
+    <div class="actions"><button type="button" id="shelf-close">Close</button></div>
+  </div>
+</div>
+<div class="overlay" id="blocked" hidden role="dialog" aria-labelledby="blocked-title">
+  <form class="card" id="blocked-form">
+    <p class="eyebrow">I'm blocked</p>
+    <h3 id="blocked-title">What do you need?</h3>
+    <input id="blocked-input" required placeholder="I need the trail's parking map">
+    <div class="actions"><button class="primary" type="submit">Tell it</button><button type="button" id="blocked-cancel">Cancel</button></div>
+  </form>
+</div>
+<p class="error" id="error" hidden role="alert"></p>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>

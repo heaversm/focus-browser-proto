@@ -4,6 +4,9 @@ PLAN.md
 node_modules/
 .DS_Store
 
+# The focus browser's own Firefox profile.
+.profile/
+
 # Screenshots and reports from test runs.
 test-results/
 

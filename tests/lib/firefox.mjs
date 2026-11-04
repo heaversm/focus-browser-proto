@@ -19,8 +19,9 @@ const hex = createHash("sha256").update(id).digest("hex");
 export const UUID = `${hex.slice(0, 8)}-${hex.slice(8, 12)}-4${hex.slice(13, 16)}-8${hex.slice(17, 20)}-${hex.slice(20, 32)}`;
 export const pageUrl = (path) => `moz-extension://${UUID}/${path}`;
 
-export async function launch({ headless = false, kiosk = false } = {}) {
-  const profile = mkdtempSync(join(tmpdir(), "focus-browser-"));
+// Pass `profile` to keep one between runs; otherwise a fresh one is made and deleted.
+export async function launch({ headless = false, kiosk = false, profile: kept } = {}) {
+  const profile = kept ?? mkdtempSync(join(tmpdir(), "focus-browser-"));
   const browser = await puppeteer.launch({
     browser: "firefox",
     executablePath: FIREFOX,
@@ -35,7 +36,7 @@ export async function launch({ headless = false, kiosk = false } = {}) {
   });
   const close = async () => {
     await browser.close().catch(() => {});
-    rmSync(profile, { recursive: true, force: true });
+    if (!kept) rmSync(profile, { recursive: true, force: true });
   };
   await browser.installExtension(EXTENSION);
   return { browser, close };

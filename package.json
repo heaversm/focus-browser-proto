@@ -3,10 +3,19 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "start": "node scripts/start.mjs",
     "test:site-pane": "node tests/site-pane.mjs",
-    "shots:mockup": "node tests/mockup-shots.mjs"
+    "shots:mockup": "node tests/mockup-shots.mjs",
+    "test:app": "node tests/app-rehearse.mjs",
+    "test:intents": "node tests/five-intents.mjs"
   },
   "devDependencies": {
     "puppeteer": "25.13.0"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.5.0",
+    "@mozilla/readability": "^0.6.0",
+    "linkedom": "^0.18.15",
+    "zod": "^4.6.7"
   }
 }

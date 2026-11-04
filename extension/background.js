@@ -59,6 +59,8 @@ browser.runtime.onMessage.addListener((message, sender) => {
   // Only our own pages can ask; content scripts run in web pages and can't.
   const fromOurPage = sender.url?.startsWith(OURS);
   if (message?.type === "allow-framing" && fromOurPage && sender.tab) return allowFramingIn(sender.tab.id);
+  // The end of a task: close the window so the cool-down starts.
+  if (message?.type === "close-window" && fromOurPage && sender.tab) return browser.windows.remove(sender.tab.windowId);
   if (message?.type === "probe-top") {
     topProbes.push({ ...message.probe, tabId: sender.tab?.id });
     if (topProbes.length > 50) topProbes.shift();
