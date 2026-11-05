@@ -14,6 +14,7 @@ const INTENTS = [
   "Find a used Toyota RAV4 hybrid under $25,000 within 50 miles of Denver.",
   "My doctor said I have prediabetes. Understand what that means and what to change.",
 ];
+const stepCount = Number(process.argv.find((a) => a.startsWith("--steps="))?.split("=")[1] ?? 2);
 const only = Number(process.argv.find((a) => a.startsWith("--only="))?.split("=")[1] ?? 0);
 const out = join(root, "test-results/intents");
 mkdirSync(out, { recursive: true });
@@ -39,7 +40,7 @@ try {
       entry.agreementMs = Date.now() - t0;
       await run(() => { document.getElementById("ag-focus").checked = false; document.getElementById("ag-cooldown").value = 0; });
       await shot("1-agreement");
-      const steps = [{ name: "2-first" }, { name: "3-second" }];
+      const steps = Array.from({ length: stepCount }, (_, k) => ({ name: `${k + 2}-step${k + 1}` }));
       await run(() => document.getElementById("agreement-form").requestSubmit());
       for (const [k, s] of steps.entries()) {
         const t = Date.now();
@@ -49,7 +50,9 @@ try {
         entry.steps.push({ ms: Date.now() - t, headline: await run(() => document.getElementById("headline").textContent), pieces });
         if (k === steps.length - 1) break;
         // Act like a person: pick the first two options, or the first finalist, or ask the first suggestion.
-        await run(() => {
+        const sent = await run(() => {
+          const draft = document.querySelector('#pieces [data-type="draft"] .primary');
+          if (draft) { draft.click(); return true; }
           const picks = document.querySelectorAll("#pieces .pick");
           if (picks.length) { picks[0].click(); picks[1]?.click(); document.querySelector('#pieces [data-type="options"] .piece-foot .primary').click(); return; }
           const choose = document.querySelector("#pieces tfoot .primary");
@@ -60,6 +63,12 @@ try {
           document.getElementById("ask-form").requestSubmit();
         });
         await sleep(500);
+        if (sent) {
+          await poll(page, () => document.body.dataset.screen === "done", undefined, 10_000).catch(() => {});
+          await shot("done");
+          entry.done = true;
+          break;
+        }
       }
     } catch (error) {
       entry.error = error.message;
