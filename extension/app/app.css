@@ -166,3 +166,5 @@ body.busy .pieces { opacity: .55; transition: opacity .3s; }
 .error[hidden] { display: none; }
 
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
+
+.about-link { position: absolute; right: 24px; bottom: 20px; font-size: 14px; color: var(--ink-2); }

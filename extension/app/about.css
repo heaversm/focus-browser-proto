@@ -1,0 +1,33 @@
+/* About page. Same palette and type as the app (app.css). */
+:root {
+  --paper: #f5f1e8;
+  --paper-2: #ebe5d8;
+  --ink: #1f2420;
+  --ink-2: #5a615b;
+  --line: #d6cfbf;
+  --pine: #2f5d46;
+  --serif: "Iowan Old Style", "Palatino", Georgia, serif;
+  --sans: "Avenir Next", "Helvetica Neue", sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.6 var(--sans); }
+a { color: var(--pine); }
+a:focus-visible { outline: 2px solid var(--pine); outline-offset: 2px; }
+.top { display: flex; justify-content: space-between; align-items: center; padding: 14px 24px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: var(--paper); }
+.logo { font: 600 18px var(--serif); }
+.about { max-width: 820px; margin: 0 auto; padding: 48px 24px 96px; }
+h1 { font: 600 clamp(32px, 4.5vw, 46px)/1.15 var(--serif); margin: 0 0 18px; }
+.lede { font-size: 19px; color: var(--ink-2); margin: 0 0 40px; }
+section { margin-top: 44px; }
+h2 { font: 600 24px var(--serif); margin: 0 0 14px; }
+h3 { font: 600 18px var(--serif); margin: 28px 0 10px; }
+ul { padding-left: 20px; margin: 0; }
+li { margin-bottom: 10px; }
+table { width: 100%; border-collapse: collapse; font-size: 15px; }
+th, td { text-align: left; vertical-align: top; padding: 10px 12px 10px 0; border-top: 1px solid var(--line); }
+thead th { border-top: 0; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-2); font-weight: 500; }
+tbody th { font-weight: 600; width: 150px; }
+code { font-size: 13px; background: var(--paper-2); padding: 1px 5px; border-radius: 4px; }
+.muted { color: var(--ink-2); margin-top: 12px; }
+.faq dt { font-weight: 600; margin-top: 16px; }
+.faq dd { margin: 4px 0 0; }
