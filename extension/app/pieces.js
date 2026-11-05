@@ -93,13 +93,22 @@ const RENDER = {
   },
 
   draft(p, ctx) {
+    const to = el("input", { type: "text", "aria-label": "Send to", placeholder: "Email or phone" });
+    to.value = p.to;
     const body = el("textarea", { class: "draft-body", "aria-label": p.title });
     body.value = p.body;
+    const copy = el("button", { type: "button", onclick: async () => {
+      await navigator.clipboard.writeText(body.value).then(() => (copy.textContent = "Copied"), () => (copy.textContent = "Couldn't copy"));
+      setTimeout(() => (copy.textContent = "Copy message"), 1500);
+    } }, "Copy message");
     const send = el("button", { type: "button", class: "primary", onclick: () => {
       const poll = document.querySelector('input[name="poll"]:checked');
-      ctx.emit({ action: "send", to: p.to, body: body.value, poll: poll?.value ?? null });
+      navigator.clipboard.writeText(body.value).catch(() => {});
+      ctx.emit({ action: "send", to: to.value, body: body.value, poll: poll?.value ?? null });
     } }, p.action || "Send");
-    return [el("h3", {}, p.title), p.to ? el("p", { class: "draft-to" }, `To: ${p.to}`) : null, body, el("div", { class: "piece-foot" }, send)];
+    return [el("h3", {}, p.title), el("div", { class: "draft-fields" }, el("label", {}, "To"), to), body,
+      el("div", { class: "piece-foot" }, copy, send),
+      el("p", { class: "draft-note" }, "Nothing is sent from here yet. The message is copied so you can paste it.")];
   },
 
   poll(p) {

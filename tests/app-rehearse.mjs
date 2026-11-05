@@ -40,6 +40,16 @@ try {
   await run(() => document.getElementById("agreement-form").requestSubmit());
   await poll(page, () => document.querySelectorAll("#pieces .piece").length > 0 && !document.body.classList.contains("busy"), undefined, 10_000);
   check("first screen was fetched once, during the agreement", stepCalls() === 1);
+  check("ask box opens once the first screen is in", await run(() => !document.getElementById("ask-input").disabled));
+  // Open a tab the way a person would (Cmd-T), from inside Firefox, and see whether it survives.
+  const tabs = await run(async () => {
+    const before = (await browser.tabs.query({})).length;
+    await browser.tabs.create({ url: "about:blank" });
+    await new Promise((r) => setTimeout(r, 1200));
+    return [before, (await browser.tabs.query({})).length];
+  });
+  console.log("   tabs before/after:", tabs);
+  check("a new tab during the task is closed", tabs[1] === tabs[0]);
   check("explore pieces drawn", await run(() => document.querySelector('#pieces [data-type="options"]') != null));
   check("off-plan link went to the shelf", await run(() => document.getElementById("shelf-count").textContent === "1"));
   await run(() => document.querySelector("#pieces .src").click());
@@ -58,6 +68,7 @@ try {
   await run(() => document.querySelector("#pieces tfoot .primary").click());
   await poll(page, () => document.querySelector('#pieces [data-type="draft"]') && !document.body.classList.contains("busy"), undefined, 10_000);
   await shot("5-send");
+  check("message has a To field and a Copy button", await run(() => !!document.querySelector('#pieces [data-type="draft"] input[aria-label="Send to"]') && [...document.querySelectorAll('#pieces [data-type="draft"] button')].some((b) => b.textContent === "Copy message")));
   await run(() => document.querySelector('#pieces [data-type="draft"] .primary').click());
   await poll(page, () => document.body.dataset.screen === "done", undefined, 5000);
   check("sending finishes the task", true);

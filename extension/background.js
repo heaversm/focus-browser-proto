@@ -55,7 +55,20 @@ browser.webRequest.onErrorOccurred.addListener(
   { urls: ["<all_urls>"], types: ["sub_frame"] }
 );
 
+// While a task runs, only its tab may exist: new tabs and windows are closed.
+let lockedTab = null;
+browser.tabs.onCreated.addListener((tab) => {
+  if (lockedTab == null || tab.id === lockedTab) return;
+  browser.tabs.remove(tab.id).catch(() => {});
+  browser.tabs.update(lockedTab, { active: true }).catch(() => {});
+});
+browser.tabs.onRemoved.addListener((tabId) => { if (tabId === lockedTab) lockedTab = null; });
+
 browser.runtime.onMessage.addListener((message, sender) => {
+  if (message?.type === "lock-tabs" && sender.url?.startsWith(OURS) && sender.tab) {
+    lockedTab = message.on ? sender.tab.id : null;
+    return;
+  }
   // Only our own pages can ask; content scripts run in web pages and can't.
   const fromOurPage = sender.url?.startsWith(OURS);
   if (message?.type === "allow-framing" && fromOurPage && sender.tab) return allowFramingIn(sender.tab.id);

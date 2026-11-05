@@ -31,16 +31,20 @@
   <!-- Agreement -->
   <section class="screen" id="agreement">
     <form class="agreement" id="agreement-form">
+      <div class="request">
+        <label for="ag-intent" class="eyebrow">Your request</label>
+        <div class="request-row"><input id="ag-intent" autocomplete="off"><button type="button" id="ag-redraft">Redraft</button></div>
+      </div>
       <p class="eyebrow">Here's the plan. Change anything.</p>
       <h2 contenteditable="true" id="ag-goal" spellcheck="false"></h2>
       <dl>
         <div><dt>Done when</dt><dd><span contenteditable="true" id="ag-done"></span><small class="check" id="ag-check"></small></dd></div>
-        <div><dt>Time</dt><dd><input type="number" id="ag-minutes" min="5" max="120" step="5"> minutes · wrap up by <span id="ag-by"></span>, one 5-minute extension</dd></div>
+        <div><dt>Task time</dt><dd><input type="number" id="ag-minutes" min="5" max="120" step="5"> minutes · wrap up by <span id="ag-by"></span></dd></div>
         <div><dt>Looks for</dt><dd contenteditable="true" id="ag-looks"></dd></div>
         <div><dt>Sources</dt><dd><div id="ag-sources"></div>
           <div class="add-source"><input id="ag-add" placeholder="Add a site, e.g. alltrails.com"><button type="button" id="ag-add-btn">Add</button></div>
           <small class="check">Everything else stays closed.</small></dd></div>
-        <div><dt>Afterwards</dt><dd>Close Firefox for <input type="number" id="ag-cooldown" min="0" max="480" step="15"> minutes
+        <div><dt>Afterwards</dt><dd>Close Firefox for <input type="number" id="ag-cooldown" min="0" max="480" step="5"> minutes
           <label class="inline"><input type="checkbox" id="ag-focus" checked> Turn on Mac Focus while I work</label></dd></div>
       </dl>
       <button class="primary" type="submit">Start</button>
@@ -54,7 +58,10 @@
       <div class="pieces" id="pieces"></div>
       <form class="ask" id="ask-form">
         <div class="suggestions" id="suggestions"></div>
-        <input id="ask-input" autocomplete="off" placeholder="Ask or steer…">
+        <div class="ask-row">
+          <input id="ask-input" autocomplete="off" placeholder="Ask or steer…" disabled>
+          <button type="submit" class="primary ask-send" id="ask-send" aria-label="Send" disabled>→</button>
+        </div>
       </form>
     </div>
     <aside class="reader" id="reader" hidden>

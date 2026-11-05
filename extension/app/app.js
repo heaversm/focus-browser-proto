@@ -107,6 +107,7 @@ $("intent-form").addEventListener("submit", async (e) => {
 
 function fillAgreement() {
   const a = state.agreement;
+  $("ag-intent").value = state.intent;
   $("ag-goal").textContent = a.goal;
   $("ag-done").textContent = a.done.sentence;
   $("ag-check").textContent = a.done.check;
@@ -149,6 +150,22 @@ function drawSources() {
     box.append(row);
   }
 }
+
+// Change the original request and redraft the whole plan.
+$("ag-redraft").addEventListener("click", async () => {
+  const intent = $("ag-intent").value.trim();
+  if (!intent) return;
+  state.intent = intent;
+  $("ag-redraft").disabled = true;
+  $("ag-redraft").textContent = "Redrafting…";
+  try {
+    state.agreement = await api("/api/agreement", { intent });
+    fillAgreement();
+    prefetch();
+  } catch (error) { showError(error); }
+  $("ag-redraft").disabled = false;
+  $("ag-redraft").textContent = "Redraft";
+});
 
 $("ag-add-btn").addEventListener("click", () => {
   const raw = $("ag-add").value.trim();
@@ -210,6 +227,8 @@ $("agreement-form").addEventListener("submit", async (e) => {
   state.deadline = state.started + agreement.minutes * 60_000;
   drawBar();
   screen("work");
+  // No other tabs or windows while the task runs (background.js closes them).
+  browser.runtime.sendMessage({ type: "lock-tabs", on: true }).catch(() => {});
   tick();
   if ($("ag-focus").checked) {
     api("/api/focus", { on: true, minutes: agreement.minutes + 5 })
@@ -245,6 +264,8 @@ async function next(event, already) {
     if (!layout.pieces.some((p) => p.type === "reader")) { $("reader").hidden = true; state.readerUrl = null; }
     $("headline").textContent = layout.headline;
     render(layout, $("pieces"), ctx);
+    $("ask-input").disabled = false;
+    $("ask-send").disabled = false;
     drawSuggestions(layout.suggestions ?? []);
     drawBar();
   } catch (error) {
@@ -428,6 +449,7 @@ $("timeup-stop").addEventListener("click", () => { $("timeup").hidden = true; fi
 // ---------- done and cool-down ----------
 
 async function finish(event) {
+  browser.runtime.sendMessage({ type: "lock-tabs", on: false }).catch(() => {});
   state.log.push({ at: Date.now(), ...event });
   clearInterval(clockTimer);
   const minutes = Math.max(1, Math.round((Date.now() - state.started) / 60_000));
