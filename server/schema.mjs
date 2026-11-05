@@ -20,7 +20,7 @@ export const Agreement = z.strictObject({
     category: z.string().describe("A plain category, e.g. 'Weather'."),
     sites: z.array(z.strictObject({
       name: z.string(),
-      host: z.string().describe("Hostname only, e.g. 'forecast.weather.gov'."),
+      host: z.string().describe("Hostname only, e.g. 'forecast.weather.gov'. For health, law, money and elections: official and primary sources first (government, medical institutions, nonpartisan analysts)."),
     })).describe("Two to four specific, reputable sites proposed for this category."),
   })).describe("Three to five categories the task needs."),
   stages: z.array(z.string()).describe("Three to five short stage names for this task, in order, ending with 'Done'. Task-specific: a trip might be Explore, Compare, Act, Done; learning might be Read, Check, Notes, Done."),
@@ -44,8 +44,8 @@ export const PIECE_TYPES = ["options", "compare", "facts", "text", "steps", "che
 
 export const Piece = z.strictObject({
   type: z.enum(PIECE_TYPES).describe(
-    "options: candidates to pick or set aside (items, action). " +
-    "compare: two or three finalists side by side (columns, rows, action). " +
+    "options: up to three candidates to pick or set aside (items, action). " +
+    "compare: two or three things side by side (columns, rows). Set action only when the person should choose one column; for a reference table leave it empty. " +
     "facts: key facts about one thing (items with name and text). " +
     "text: a short explanation (body, url as its source). " +
     "steps: ordered steps to carry out (items with text). " +

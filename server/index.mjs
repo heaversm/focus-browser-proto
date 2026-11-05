@@ -13,6 +13,7 @@ const routes = {
   "/api/agreement": ({ intent }) => planner.makeAgreement(String(intent ?? "")),
   "/api/session": ({ agreement }) => ({ id: planner.startSession(agreement) }),
   "/api/step": async ({ id, event }) => ({ layout: await planner.step(id, event), usage: planner.usageOf(id) }),
+  "/api/progress": ({ id }) => ({ lines: planner.progressOf?.(id) ?? [] }),
   "/api/check": ({ id, url, title }) => planner.checkLink(id, { url, title }),
   "/api/reader": ({ url }) => readerView(String(url)),
   "/api/focus": ({ on, minutes }) => setFocus(Boolean(on), minutes).then(() => ({ ok: true })),
@@ -34,7 +35,7 @@ createServer(async (req, res) => {
   try {
     const result = await route(body ? JSON.parse(body) : {});
     res.writeHead(200, { "content-type": "application/json" }).end(JSON.stringify(result));
-    console.log(`${req.url} ${Date.now() - started} ms`);
+    if (req.url !== "/api/progress") console.log(`${req.url} ${Date.now() - started} ms`);
   } catch (error) {
     console.error(`${req.url} failed:`, error.message);
     res.writeHead(500, { "content-type": "application/json" }).end(JSON.stringify({ error: error.message }));

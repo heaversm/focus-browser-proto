@@ -19,7 +19,9 @@ How to build a screen:
 - Pick the fewest pieces that serve this step. Familiar patterns: lists to choose from, a comparison table, a checklist, a message draft. Nothing decorative.
 - Drop what no longer matters. When the person narrows down, the rejected options go. Each screen shows only what the current step needs.
 - Fill pieces with real, current information. Search and read pages to get it. Every fact carries the URL of a page you actually searched or read in this session; if you can't source a fact, leave it out.
-- Prefer the sites listed in the agreement's sources. Use others only when those don't have what's needed.
+- Search and read only the sites listed in the agreement's sources; the browser enforces this. If they don't have what's needed, say so in a text piece and suggest a site the person could add.
+- For health, law, money and elections, rely on official and primary sources (government, medical institutions, nonpartisan analysts), not commercial or personal sites.
+- Offer at most three options at a time. Fewer, better candidates beat a long list.
 - Use a reader piece only when the person needs to read or use a page itself. Otherwise summarise into other pieces.
 - Move through the agreement's stages as the work progresses. The last working stage should end in something done: a message sent, a decision recorded, steps completed, matching the agreement's done condition.
 - If you met tempting but off-task links while researching (shopping, news, unrelated articles), list them in offPlan instead of showing them.
@@ -58,12 +60,37 @@ const sessions = new Map();
 
 export function startSession(agreement) {
   const id = crypto.randomUUID();
-  sessions.set(id, { agreement, messages: [], usage: { input: 0, output: 0, searches: 0 } });
+  sessions.set(id, { agreement, messages: [], usage: { input: 0, output: 0, searches: 0 }, progress: [] });
   return id;
 }
 
 export function usageOf(id) {
   return sessions.get(id)?.usage ?? null;
+}
+
+/** What the current step is doing, newest last, for the status bar. */
+export function progressOf(id) {
+  return sessions.get(id)?.progress ?? [];
+}
+
+// The agreement's sites, as plain hostnames for allowed_domains (subdomains are covered).
+function allowedDomains(agreement) {
+  const hosts = new Set();
+  for (const c of agreement.sources ?? []) for (const site of c.sites ?? []) {
+    const host = String(site.host ?? "").trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "").replace(/^www\./, "");
+    if (host.includes(".")) hosts.add(host);
+  }
+  return [...hosts].slice(0, 64);
+}
+
+// One line per search or page read, as the stream reports them.
+function describe(block) {
+  if (block.type !== "server_tool_use") return null;
+  if (block.name === "web_search") return `Searching “${block.input?.query ?? ""}”`;
+  if (block.name === "web_fetch") {
+    try { return `Reading ${new URL(block.input?.url).host.replace(/^www\./, "")}`; } catch { return "Reading a page"; }
+  }
+  return null;
 }
 
 /** One user action → the next screen. */
@@ -76,25 +103,43 @@ export async function step(id, event) {
     : `The person did this: ${JSON.stringify(event)}\n\nBuild the next screen.`;
   session.messages.push({ role: "user", content: text });
 
+  // Search and reading are limited to the agreement's sites.
+  const domains = allowedDomains(session.agreement);
+  const limit = domains.length ? { allowed_domains: domains } : {};
   const tools = [
-    { type: "web_search_20260209", name: "web_search", max_uses: SETTINGS.maxSearches },
-    { type: "web_fetch_20260209", name: "web_fetch", max_uses: SETTINGS.maxFetches },
+    { type: "web_search_20260209", name: "web_search", max_uses: SETTINGS.maxSearches, ...limit },
+    { type: "web_fetch_20260209", name: "web_fetch", max_uses: SETTINGS.maxFetches, ...limit },
   ];
+  session.progress = [first ? "Starting" : "Thinking"];
   // Server tools run on Anthropic's side; a long turn may pause and need resending.
   for (let i = 0; i < 6; i++) {
-    const response = await callClaude({
+    const stream = client.beta.messages.stream({
+      model: SETTINGS.model,
+      max_tokens: 16000,
+      thinking: { type: "adaptive" },
+      betas: ["server-side-fallback-2026-07-01"],
+      fallbacks: "default",
       system: SYSTEM,
       tools,
       cache_control: { type: "ephemeral" },
       output_config: { effort: SETTINGS.effort.step, format: LAYOUT_FORMAT },
       messages: session.messages,
     });
+    stream.on("contentBlock", (block) => {
+      const line = describe(block);
+      if (line) session.progress.push(line);
+      if (block.type === "text") session.progress.push("Building the screen");
+    });
+    const response = await stream.finalMessage();
     session.usage.input += response.usage.input_tokens + (response.usage.cache_read_input_tokens ?? 0) + (response.usage.cache_creation_input_tokens ?? 0);
     session.usage.output += response.usage.output_tokens;
     session.usage.searches += response.usage.server_tool_use?.web_search_requests ?? 0;
     session.messages.push({ role: "assistant", content: response.content });
     if (response.stop_reason === "pause_turn") continue;
-    return finalJson(response, LAYOUT_FORMAT);
+    const layout = finalJson(response, LAYOUT_FORMAT);
+    // Enforce the option cap in code too.
+    for (const piece of layout.pieces) if (piece.type === "options") piece.items = piece.items.slice(0, SETTINGS.maxOptions);
+    return layout;
   }
   throw new Error("The step kept pausing without finishing.");
 }

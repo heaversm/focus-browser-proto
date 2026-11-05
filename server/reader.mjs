@@ -19,10 +19,12 @@ export async function readerView(url) {
   document.head?.prepend(base);
   const article = new Readability(document).parse();
   if (!article?.content) throw new Error("No readable article on that page.");
+  // Titles can arrive with entities still encoded ("&amp;").
+  const decode = (t) => t == null ? t : String(t).replace(/&(amp|lt|gt|quot|#39);/g, (_, e) => ({ amp: "&", lt: "<", gt: ">", quot: '"', "#39": "'" })[e]);
   return {
     url: response.url,
-    title: article.title,
-    byline: article.byline,
+    title: decode(article.title),
+    byline: decode(article.byline),
     siteName: article.siteName ?? new URL(response.url).host,
     content: article.content,
   };

@@ -15,7 +15,10 @@ if (taken) {
   console.error("Something is already running on port 4747 (probably npm start). Quit it first: this test must use its own scripted server.");
   process.exit(1);
 }
-const server = spawn(process.execPath, ["server/index.mjs", "--rehearse"], { cwd: root, stdio: "ignore" });
+const server = spawn(process.execPath, ["server/index.mjs", "--rehearse"], { cwd: root, stdio: ["ignore", "pipe", "ignore"] });
+let serverLog = "";
+server.stdout.on("data", (d) => (serverLog += d));
+const stepCalls = () => (serverLog.match(/\/api\/step /g) ?? []).length;
 await sleep(800);
 const { browser, close } = await launch({ headless });
 const results = [];
@@ -36,6 +39,7 @@ try {
 
   await run(() => document.getElementById("agreement-form").requestSubmit());
   await poll(page, () => document.querySelectorAll("#pieces .piece").length > 0 && !document.body.classList.contains("busy"), undefined, 10_000);
+  check("first screen was fetched once, during the agreement", stepCalls() === 1);
   check("explore pieces drawn", await run(() => document.querySelector('#pieces [data-type="options"]') != null));
   check("off-plan link went to the shelf", await run(() => document.getElementById("shelf-count").textContent === "1"));
   await run(() => document.querySelector("#pieces .src").click());

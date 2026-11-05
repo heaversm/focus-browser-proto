@@ -66,9 +66,10 @@ const RENDER = {
     const head = el("tr", {}, el("th"), p.columns.map((c) => el("th", { scope: "col" }, c.name)));
     const body = p.rows.map((r) => el("tr", {}, el("th", { scope: "row" }, r.label),
       r.cells.map((c) => el("td", {}, c.text, " ", sourceLink(c.source, ctx)))));
-    const foot = el("tr", {}, el("td"), p.columns.map((c) => el("td", {},
-      el("button", { type: "button", class: "primary", onclick: () => ctx.emit({ action: "choose", choice: c.name }) }, p.action || "Choose"))));
-    return [el("h3", {}, p.title), el("table", { class: "cmp" }, el("thead", {}, head), el("tbody", {}, body), el("tfoot", {}, foot))];
+    // A reference table has no action: no buttons.
+    const foot = p.action ? el("tfoot", {}, el("tr", {}, el("td"), p.columns.map((c) => el("td", {},
+      el("button", { type: "button", class: "primary", onclick: () => ctx.emit({ action: "choose", choice: c.name }) }, p.action))))) : null;
+    return [el("h3", {}, p.title), el("table", { class: "cmp" }, el("thead", {}, head), el("tbody", {}, body), foot)];
   },
 
   facts(p, ctx) {

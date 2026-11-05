@@ -96,3 +96,4 @@ export async function checkLink(_id, { url }) {
   return /rei\.com|boots/i.test(url) ? { verdict: "detour", reason: "Shopping for boots isn't part of planning the hike." } : { verdict: "on_task", reason: "Trail information." };
 }
 export function usageOf() { return { input: 0, output: 0, searches: 0 }; }
+export function progressOf() { return ["Rehearsal: scripted answers"]; }

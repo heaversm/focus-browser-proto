@@ -46,10 +46,21 @@ function screen(name) { document.body.dataset.screen = name; }
 const hostOf = (url) => { try { return new URL(url).host.replace(/^www\./, ""); } catch { return ""; } };
 const clockTime = (ms) => new Date(ms).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
 
+// While a step runs, the status line shows what the AI is doing: each search and page read.
+let progressTimer = null;
 function busy(on, text = "Working on it…") {
   document.body.classList.toggle("busy", on);
   $("working").hidden = !on;
   $("working-text").textContent = text;
+  clearInterval(progressTimer);
+  if (!on || !state.session) return;
+  const started = Date.now();
+  progressTimer = setInterval(async () => {
+    const { lines = [] } = await api("/api/progress", { id: state.session }).catch(() => ({}));
+    const seconds = Math.round((Date.now() - started) / 1000);
+    const reads = lines.filter((l) => l.startsWith("Searching") || l.startsWith("Reading")).length;
+    $("working-text").textContent = `${lines.at(-1) ?? text}${reads ? ` · ${reads} looked up` : ""} · ${seconds}s`;
+  }, 800);
 }
 
 // ---------- start: cool-down or intent ----------
@@ -79,11 +90,15 @@ $("intent-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   state.intent = $("intent-input").value.trim();
   if (!state.intent) return;
+  // Each task starts with an empty shelf.
+  state.saved = [];
+  browser.storage.local.set({ saved: [] });
   $("intent-hint").textContent = "Drafting a plan…";
   try {
     state.agreement = await api("/api/agreement", { intent: state.intent });
     fillAgreement();
     screen("agreement");
+    prefetch();
   } catch (error) {
     showError(error);
     $("intent-hint").textContent = "Firefox opens here every time. Everything else waits until you say.";
@@ -149,8 +164,9 @@ $("ag-add-btn").addEventListener("click", () => {
 function updateBy() { $("ag-by").textContent = clockTime(Date.now() + Number($("ag-minutes").value) * 60_000); }
 $("ag-minutes").addEventListener("input", updateBy);
 
+// The agreement as it stands on screen, without changing state.
 function readAgreement() {
-  const a = state.agreement;
+  const a = structuredClone(state.agreement);
   a.goal = $("ag-goal").textContent.trim();
   if ($("ag-done").textContent.trim() !== a.done.sentence) {
     // An edited done condition: tell the AI, and fall back to asking until it's re-read.
@@ -159,8 +175,22 @@ function readAgreement() {
   a.minutes = Number($("ag-minutes").value) || a.minutes;
   a.looksFor = $("ag-looks").textContent.split("·").map((s) => s.trim()).filter(Boolean);
   a.cooldownMinutes = Number($("ag-cooldown").value) || 0;
-  a.sources = a.sources.map((c) => ({ ...c, sites: c.sites.filter((s) => s.on) })).filter((c) => c.sites.length);
+  a.sources = a.sources.map((c) => ({ ...c, sites: c.sites.filter((s) => s.on).map(({ on, ...site }) => site) })).filter((c) => c.sites.length);
   return a;
+}
+
+// The parts of the agreement the AI's first screen depends on.
+const researchKey = (a) => JSON.stringify([a.goal, a.done, a.looksFor, a.sources]);
+
+// Start the first screen while the person reads the agreement. If they change
+// what it depends on before pressing Start, it's thrown away and redone.
+let prefetched = null;
+function prefetch() {
+  const agreement = readAgreement();
+  // Recorded at once, so pressing Start early still finds it instead of paying twice.
+  const ready = api("/api/session", { agreement }).then(({ id }) => ({ id, result: api("/api/step", { id, event: { action: "start" } }) }));
+  ready.then(({ result }) => result.catch(() => {}), () => {});
+  prefetched = { key: researchKey(agreement), ready };
 }
 
 // ---------- agreement → workspace ----------
@@ -168,9 +198,13 @@ function readAgreement() {
 $("agreement-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   const agreement = readAgreement();
+  state.agreement = agreement;
+  const match = prefetched && prefetched.key === researchKey(agreement) ? prefetched : null;
+  prefetched = null;
+  let reuse = null;
   try {
-    const { id } = await api("/api/session", { agreement });
-    state.session = id;
+    reuse = match ? await match.ready.catch(() => null) : null;
+    state.session = reuse ? reuse.id : (await api("/api/session", { agreement })).id;
   } catch (error) { return showError(error); }
   state.started = Date.now();
   state.deadline = state.started + agreement.minutes * 60_000;
@@ -182,7 +216,7 @@ $("agreement-form").addEventListener("submit", async (e) => {
       .then(() => { state.focusOn = true; $("focus-chip").hidden = false; })
       .catch((error) => showError(new Error(`Mac Focus didn't turn on: ${error.message}`)));
   }
-  await next({ action: "start" });
+  await next({ action: "start" }, reuse?.result);
 });
 
 function drawBar() {
@@ -200,11 +234,11 @@ function drawBar() {
   $("shelf-count").textContent = state.saved.length;
 }
 
-async function next(event) {
+async function next(event, already) {
   state.log.push({ at: Date.now(), ...event });
   busy(true, event.action === "start" ? "Finding what you need…" : "Updating…");
   try {
-    const { layout } = await api("/api/step", { id: state.session, event });
+    const { layout } = await (already ?? api("/api/step", { id: state.session, event }));
     state.layout = layout;
     for (const link of layout.offPlan ?? []) addSaved(link, "found while researching");
     // A new screen drops the page from the last one, unless this screen asks for a page.
@@ -234,6 +268,7 @@ const ctx = {
 };
 
 function drawSuggestions(list) {
+  $("ask-input").placeholder = list.length ? `Ask or steer, e.g. “${list[0]}”` : "Ask or steer…";
   const box = $("suggestions");
   box.replaceChildren();
   for (const s of list) {
