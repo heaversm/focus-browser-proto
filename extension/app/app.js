@@ -259,7 +259,16 @@ async function next(event, already) {
   state.log.push({ at: Date.now(), ...event });
   busy(true, event.action === "start" ? "Finding what you need…" : "Updating…");
   try {
-    const { layout } = await (already ?? api("/api/step", { id: state.session, event }));
+    // If the background research failed, try once more now.
+    const result = already
+      ? await already.catch(() => api("/api/step", { id: state.session, event }))
+      : await api("/api/step", { id: state.session, event });
+    const { layout, blocked = [] } = result;
+    const notice = $("notice");
+    notice.hidden = !blocked.length;
+    notice.textContent = blocked.length
+      ? `Skipped ${blocked.join(", ")}: ${blocked.length > 1 ? "these sites block" : "this site blocks"} AI tools, so the rest of your sources were used.`
+      : "";
     state.layout = layout;
     for (const link of layout.offPlan ?? []) addSaved(link, "found while researching");
     // A new screen drops the page from the last one, unless this screen asks for a page.
@@ -271,10 +280,30 @@ async function next(event, already) {
     drawSuggestions(layout.suggestions ?? []);
     drawBar();
   } catch (error) {
-    showError(error);
+    showRetry(event, error);
   } finally {
     busy(false);
   }
+}
+
+// A step failed: keep the person in the task with a way forward, not a dead screen.
+function showRetry(event, error) {
+  const box = document.createElement("section");
+  box.className = "piece wide retry";
+  const h = document.createElement("h3");
+  h.textContent = "That didn't work";
+  const p = document.createElement("p");
+  p.textContent = error.message ?? String(error);
+  const again = document.createElement("button");
+  again.type = "button";
+  again.className = "primary";
+  again.textContent = "Try again";
+  again.addEventListener("click", () => next(event));
+  box.append(h, p, again);
+  if (!state.layout) $("headline").textContent = state.agreement.goal;
+  $("pieces").prepend(box);
+  $("ask-input").disabled = false;
+  $("ask-send").disabled = false;
 }
 
 const ctx = {

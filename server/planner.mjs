@@ -61,8 +61,13 @@ const sessions = new Map();
 
 export function startSession(agreement) {
   const id = crypto.randomUUID();
-  sessions.set(id, { agreement, messages: [], usage: { input: 0, output: 0, searches: 0 }, progress: [] });
+  sessions.set(id, { agreement, messages: [], usage: { input: 0, output: 0, searches: 0 }, progress: [], blocked: new Set() });
   return id;
+}
+
+/** Sites skipped because they block AI tools. */
+export function blockedOf(id) {
+  return [...(sessions.get(id)?.blocked ?? [])];
 }
 
 export function usageOf(id) {
@@ -104,16 +109,20 @@ export async function step(id, event) {
     : `The person did this: ${JSON.stringify(event)}\n\nBuild the next screen.`;
   session.messages.push({ role: "user", content: text });
 
-  // Search and reading are limited to the agreement's sites.
-  const domains = allowedDomains(session.agreement);
-  const limit = domains.length ? { allowed_domains: domains } : {};
-  const tools = [
-    { type: "web_search_20260209", name: "web_search", max_uses: first ? SETTINGS.firstSearches : SETTINGS.maxSearches, ...limit },
-    { type: "web_fetch_20260209", name: "web_fetch", max_uses: first ? SETTINGS.firstFetches : SETTINGS.maxFetches, ...limit },
-  ];
+  // Search and reading are limited to the agreement's sites, minus any that
+  // block Anthropic's crawler (the API rejects the request if one is listed).
+  const toolsFor = () => {
+    const domains = allowedDomains(session.agreement).filter((d) => !session.blocked.has(d));
+    const limit = domains.length ? { allowed_domains: domains } : {};
+    return [
+      { type: "web_search_20260209", name: "web_search", max_uses: first ? SETTINGS.firstSearches : SETTINGS.maxSearches, ...limit },
+      { type: "web_fetch_20260209", name: "web_fetch", max_uses: first ? SETTINGS.firstFetches : SETTINGS.maxFetches, ...limit },
+    ];
+  };
   session.progress = [first ? "Starting" : "Thinking"];
   // Server tools run on Anthropic's side; a long turn may pause and need resending.
   for (let i = 0; i < 6; i++) {
+    const tools = toolsFor();
     const stream = client.beta.messages.stream({
       model: SETTINGS.model,
       max_tokens: 16000,
@@ -131,7 +140,20 @@ export async function step(id, event) {
       if (line) session.progress.push(line);
       if (block.type === "text") session.progress.push("Building the screen");
     });
-    const response = await stream.finalMessage();
+    let response;
+    try {
+      response = await stream.finalMessage();
+    } catch (error) {
+      // "The following domains are not accessible to our user agent: ['a.com', 'b.com']"
+      const listed = error instanceof Anthropic.BadRequestError && /not accessible to our user agent: \[([^\]]*)\]/.exec(error.message ?? "");
+      if (!listed) throw error;
+      const hosts = [...listed[1].matchAll(/'([^']+)'/g)].map((m) => m[1].replace(/^www\./, ""));
+      if (!hosts.length || hosts.every((h) => session.blocked.has(h))) throw error;
+      for (const h of hosts) session.blocked.add(h);
+      session.progress.push(`Skipping ${hosts.join(", ")}: ${hosts.length > 1 ? "they block" : "it blocks"} AI tools`);
+      console.log(`blocked by site: ${hosts.join(", ")}; retrying without`);
+      continue;
+    }
     session.usage.input += response.usage.input_tokens + (response.usage.cache_read_input_tokens ?? 0) + (response.usage.cache_creation_input_tokens ?? 0);
     session.usage.output += response.usage.output_tokens;
     session.usage.searches += response.usage.server_tool_use?.web_search_requests ?? 0;
