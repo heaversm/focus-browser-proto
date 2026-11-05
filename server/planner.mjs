@@ -22,6 +22,7 @@ How to build a screen:
 - Search and read only the sites listed in the agreement's sources; the browser enforces this. If they don't have what's needed, say so in a text piece and suggest a site the person could add.
 - For health, law, money and elections, rely on official and primary sources (government, medical institutions, nonpartisan analysts), not commercial or personal sites.
 - Offer at most three options at a time. Fewer, better candidates beat a long list.
+- Searches and page reads are limited per step, so make each count: one well-aimed search per need, then read the best result. If a search or read fails or the limit runs out, build the best screen you can from what you found. Never show a screen about the tools failing when you have usable results.
 - Use a reader piece only when the person needs to read or use a page itself. Otherwise summarise into other pieces.
 - Move through the agreement's stages as the work progresses. The last working stage should end in something done: a message sent, a decision recorded, steps completed, matching the agreement's done condition.
 - If you met tempting but off-task links while researching (shopping, news, unrelated articles), list them in offPlan instead of showing them.
@@ -107,8 +108,8 @@ export async function step(id, event) {
   const domains = allowedDomains(session.agreement);
   const limit = domains.length ? { allowed_domains: domains } : {};
   const tools = [
-    { type: "web_search_20260209", name: "web_search", max_uses: SETTINGS.maxSearches, ...limit },
-    { type: "web_fetch_20260209", name: "web_fetch", max_uses: SETTINGS.maxFetches, ...limit },
+    { type: "web_search_20260209", name: "web_search", max_uses: first ? SETTINGS.firstSearches : SETTINGS.maxSearches, ...limit },
+    { type: "web_fetch_20260209", name: "web_fetch", max_uses: first ? SETTINGS.firstFetches : SETTINGS.maxFetches, ...limit },
   ];
   session.progress = [first ? "Starting" : "Thinking"];
   // Server tools run on Anthropic's side; a long turn may pause and need resending.
