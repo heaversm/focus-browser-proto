@@ -7,10 +7,10 @@ A Firefox extension, run full screen in its own Firefox profile, plus a small lo
 ## Run it
 
     npm install
-    npm start -- --rehearse        # scripted answers, no AI, no cost
+    npm run rehearse               # scripted answers, no AI, no cost
     npm start                      # the real thing (needs a key, below)
     npm start -- --window          # a normal window instead of full screen
-    npm start -- --reset           # end a break early and clear the saved shelf
+    npm run reset                  # end a break early and clear the saved shelf
 
 Needs Firefox at `/Applications/Firefox.app` (or set `FIREFOX` to the binary). Quit with Cmd-Q.
 

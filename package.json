@@ -4,6 +4,8 @@
   "type": "module",
   "scripts": {
     "start": "node scripts/start.mjs",
+    "reset": "node scripts/start.mjs --reset",
+    "rehearse": "node scripts/start.mjs --rehearse",
     "test:site-pane": "node tests/site-pane.mjs",
     "shots:mockup": "node tests/mockup-shots.mjs",
     "test:app": "node tests/app-rehearse.mjs",
