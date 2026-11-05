@@ -56,18 +56,21 @@ browser.webRequest.onErrorOccurred.addListener(
 );
 
 // While a task runs, only its tab may exist: new tabs and windows are closed.
-let lockedTab = null;
-browser.tabs.onCreated.addListener((tab) => {
-  if (lockedTab == null || tab.id === lockedTab) return;
+// Kept in session storage: this background script is unloaded when idle, and
+// a plain variable would forget the lock.
+const getLocked = async () => (await browser.storage.session.get("lockedTab")).lockedTab ?? null;
+const setLocked = (id) => browser.storage.session.set({ lockedTab: id });
+browser.tabs.onCreated.addListener(async (tab) => {
+  const locked = await getLocked();
+  if (locked == null || tab.id === locked) return;
   browser.tabs.remove(tab.id).catch(() => {});
-  browser.tabs.update(lockedTab, { active: true }).catch(() => {});
+  browser.tabs.update(locked, { active: true }).catch(() => {});
 });
-browser.tabs.onRemoved.addListener((tabId) => { if (tabId === lockedTab) lockedTab = null; });
+browser.tabs.onRemoved.addListener(async (tabId) => { if (tabId === (await getLocked())) setLocked(null); });
 
 browser.runtime.onMessage.addListener((message, sender) => {
   if (message?.type === "lock-tabs" && sender.url?.startsWith(OURS) && sender.tab) {
-    lockedTab = message.on ? sender.tab.id : null;
-    return;
+    return setLocked(message.on ? sender.tab.id : null);
   }
   // Only our own pages can ask; content scripts run in web pages and can't.
   const fromOurPage = sender.url?.startsWith(OURS);

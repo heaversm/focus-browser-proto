@@ -12,14 +12,13 @@
 </header>
 <main class="about">
   <h1>Get online, get it done, get back to your people.</h1>
-  <p class="lede">Focus Browser starts by asking what you're trying to do. It builds the screen that task needs, keeps everything else out, and closes when you're done. A prototype from Mozilla's Future of the Web team, made for a week on the theme of belonging.</p>
+  <p class="lede">Focus Browser starts by asking what you're trying to do. It builds the screen that task needs, keeps everything else out, and closes when you're done.</p>
 
   <section>
     <h2>Why this exists</h2>
     <ul>
       <li><b>The best thing the web can do for belonging may be to let you leave.</b> Time spent scrolling is time not spent with the people around you.</li>
       <li><b>Most of the web is built to keep you there.</b> Feeds, autoplay, recommendations and infinite scroll are designed to hold attention, not to finish your task.</li>
-      <li><b>Less time online can mean more time with people.</b> In a randomized trial of 467 people, blocking mobile internet for two weeks improved mental health, well-being and attention, and increased time on offline activities including seeing people in person (<a href="https://academic.oup.com/pnasnexus/article/4/2/pgaf017/8016017">Castelo et al., PNAS Nexus 2025</a>).</li>
       <li><b>A pause works.</b> Adding a short pause before a social app opened meant 36% of attempts to open it were abandoned (<a href="https://www.pnas.org/doi/10.1073/pnas.2213114120">one sec study, PNAS 2023</a>).</li>
       <li><b>Knowing your intention helps.</b> An AI that knew people's stated intention and nudged them when they drifted cut time off task to 10.4%, against 16.6% with a plain reminder app (<a href="https://arxiv.org/html/2510.14513v2">INA, 2025 preprint</a>).</li>
     </ul>
@@ -45,10 +44,10 @@
       <thead><tr><th></th><th>A typical browser</th><th>Focus Browser</th></tr></thead>
       <tbody>
         <tr><th>Opens to</th><td>A feed, a search box, your tabs</td><td>One question: what are you trying to do?</td></tr>
-        <tr><th>What you see</th><td>Whatever each site wants you to see</td><td>The pieces this step of your task needs</td></tr>
+        <tr><th>What you see</th><td>Ads, popups, related links, SEO stuffing</td><td>The pieces this step of your task needs</td></tr>
         <tr><th>Sites</th><td>All of them</td><td>The ones you agreed to</td></tr>
         <tr><th>Tempting links</th><td>One click away</td><td>Saved for later</td></tr>
-        <tr><th>When you're done</th><td>Nothing tells you</td><td>It says so, then closes</td></tr>
+        <tr><th>When you're done</th><td>Nothing tells you</td><td>The browser makes you take a break</td></tr>
       </tbody>
     </table>
   </section>
@@ -59,15 +58,13 @@
       <thead><tr><th>Piece</th><th>What it does</th><th>Where it runs</th></tr></thead>
       <tbody>
         <tr><td>Firefox extension, in kiosk mode</td><td>The whole interface. Kiosk mode hides the toolbar and tabs, and the extension closes any new tab or window while a task runs</td><td>Your computer</td></tr>
-        <tr><td>Claude (Anthropic API), with web search and page reading</td><td>Drafts the plan, researches the approved sites, and returns each screen as structured data: which pieces, filled with what. It never writes interface code</td><td>Anthropic's servers</td></tr>
-        <tr><td>A small local server</td><td>Holds the API key so the extension never sees it, and passes requests to Claude</td><td>Your computer, reachable only from it</td></tr>
         <tr><td>Readability</td><td>Turns a page into clean text for the side panel. It's the library behind Firefox's Reader View</td><td>Your computer</td></tr>
         <tr><td>Request rules (<code>declarativeNetRequest</code>)</td><td>Let a real site show inside the side panel when you choose "Show original"</td><td>Firefox, in the focus tab only</td></tr>
         <tr><td>macOS Shortcuts</td><td>Turns a Focus mode on at the start and off at the end</td><td>Your Mac</td></tr>
       </tbody>
     </table>
 
-    <h3>The pieces a screen is built from</h3>
+    <h3>UI primitives include:</h3>
     <table>
       <tbody>
         <tr><th>Options</th><td>Up to three candidates to pick or set aside</td></tr>
@@ -85,7 +82,7 @@
   </section>
 
   <section>
-    <h2>What it borrows, and from whom</h2>
+    <h2>Informed by:</h2>
     <table>
       <thead><tr><th>Project</th><th>What it learned</th><th>What Focus Browser takes</th></tr></thead>
       <tbody>
@@ -96,30 +93,6 @@
         <tr><td>Firefox Reader View</td><td>Reading feels different when the page is quiet</td><td>The library itself, and the look of the side panel</td></tr>
       </tbody>
     </table>
-  </section>
-
-  <section>
-    <h2>What it does and doesn't do</h2>
-    <table>
-      <thead><tr><th>Does</th><th>Doesn't</th></tr></thead>
-      <tbody>
-        <tr><td>Keeps the focus window to one task, with your approved sites</td><td>Block your other browsers or apps. A Mac Focus mode quiets notifications but doesn't lock anything</td></tr>
-        <tr><td>Shows where every fact came from</td><td>Guarantee the AI read it right. Check the source when it matters</td></tr>
-        <tr><td>Drafts the message and copies it for you</td><td>Send anything. You paste it where you want it</td></tr>
-        <tr><td>Starts researching while you read the plan</td><td>Answer instantly. A screen can take half a minute or more while it searches and reads</td></tr>
-        <tr><td>Closes when you're done</td><td>Stop you reopening it. The break is a strong suggestion, not a lock</td></tr>
-      </tbody>
-    </table>
-  </section>
-
-  <section>
-    <h2>Healthy by design</h2>
-    <ul>
-      <li><b>No feeds, no recommendations, no infinite scroll.</b> Nothing on screen is there to keep you longer.</li>
-      <li><b>No screenshots.</b> The browser already knows the page and what you did, so nothing watches your screen.</li>
-      <li><b>You see the rules.</b> Every limit is in the plan you agreed to, and you can change it before you start.</li>
-      <li><b>Leaving is part of it.</b> The last screen asks who you're seeing today.</li>
-    </ul>
   </section>
 
   <section>
@@ -136,19 +109,13 @@
   <section>
     <h2>Questions</h2>
     <dl class="faq">
-      <dt>Why not just ask a chatbot and use a site blocker?</dt>
-      <dd>A chatbot hands you its conclusion. Here you do the comparing and deciding yourself, on real sources, inside limits you set, and the browser knows when you're finished.</dd>
-      <dt>What does the AI see?</dt>
-      <dd>Your request, the plan, what you click and type in the focus window, and the pages it reads from your approved sites. It doesn't see your other tabs, other apps or your screen.</dd>
-      <dt>Why is it slow sometimes?</dt>
-      <dd>Each screen can involve several searches and page reads before anything is built. The status line shows what it's doing.</dd>
-      <dt>Is this a Firefox feature?</dt>
-      <dd>No. It's a prototype that runs in its own Firefox profile, separate from the Firefox you browse with.</dd>
+      <dt>Why not just ask a chatbot?</dt>
+      <dd>Three reasons. A chatbot gives you a wall of text, not an interface built for the task: options to pick from, a comparison, a message ready to send. It's built to keep you talking, so every answer invites another question. And nothing stops you wandering off into side questions and tabs. Focus Browser builds the screen the task needs, keeps you inside the plan you agreed to, and ends when the task does.</dd>
     </dl>
   </section>
 
   <section>
-    <h2>Other forms it could take</h2>
+    <h2>Concept extensions:</h2>
     <ul>
       <li><b>Trusted sources.</b> Star the sites that worked well, and future tasks use them first. Kept on your device.</li>
       <li><b>A stronger lock.</b> Pausing other apps and browsers during a task, through the operating system.</li>

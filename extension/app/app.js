@@ -90,6 +90,8 @@ $("intent-form").addEventListener("submit", async (e) => {
   e.preventDefault();
   state.intent = $("intent-input").value.trim();
   if (!state.intent) return;
+  // From here on, this tab is the only one (background.js closes others).
+  browser.runtime.sendMessage({ type: "lock-tabs", on: true }).catch(() => {});
   // Each task starts with an empty shelf.
   state.saved = [];
   browser.storage.local.set({ saved: [] });
