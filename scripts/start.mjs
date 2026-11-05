@@ -3,6 +3,7 @@
 //   npm start                 real AI (needs ANTHROPIC_API_KEY, or .env)
 //   npm start -- --rehearse   scripted answers, no API calls, no cost
 //   npm start -- --window     a normal window instead of full screen
+//   npm start -- --reset      end any break (cool-down) and clear the saved shelf
 import { spawn } from "node:child_process";
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
@@ -11,6 +12,7 @@ import { launch, openExtensionPage, pageUrl, root, sleep } from "../tests/lib/fi
 
 const rehearse = process.argv.includes("--rehearse");
 const kiosk = !process.argv.includes("--window");
+const reset = process.argv.includes("--reset");
 
 const server = spawn(process.execPath, ["--env-file-if-exists=.env", "server/index.mjs", ...(rehearse ? ["--rehearse"] : [])], { cwd: root, stdio: "inherit" });
 await sleep(800);
@@ -21,6 +23,10 @@ mkdirSync(profile, { recursive: true });
 const { browser, close } = await launch({ kiosk, profile });
 const page = await browser.newPage();
 await openExtensionPage(page, pageUrl("app/index.html"));
+if (reset) {
+  await page.evaluate(() => browser.storage.local.remove(["lockUntil", "saved"]));
+  await openExtensionPage(page, pageUrl("app/index.html"));
+}
 for (const p of await browser.pages()) if (p !== page) await p.close().catch(() => {});
 
 let stopping = false;
