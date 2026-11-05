@@ -1,4 +1,5 @@
-// Draws each piece the AI can choose (server/schema.mjs). All model text goes
+// Draws each piece the AI can choose (server/schema.mjs). Every piece has the
+// same flat shape; each type reads only the fields it uses. All model text goes
 // in through textContent, never as HTML. Pieces report what the person does
 // through ctx.emit(event); sources open in the reader through ctx.open(url).
 
@@ -49,7 +50,7 @@ const RENDER = {
         el("div", { class: "opt-name" }, item.name),
         el("div", { class: "opt-actions" }, pick, drop),
         el("div", { class: "opt-facts" }, item.facts.map((f) => el("span", {}, f))),
-        el("div", { class: "opt-note" }, item.note ? `${item.note} ` : "", sourceLink(item.source, ctx)),
+        el("div", { class: "opt-note" }, item.text ? `${item.text} ` : "", sourceLink(item.source, ctx)),
       );
       return row;
     });
@@ -72,12 +73,12 @@ const RENDER = {
 
   facts(p, ctx) {
     return [el("h3", {}, p.title), el("dl", { class: "facts" },
-      p.items.map((f) => el("div", {}, el("dt", {}, f.label), el("dd", {}, f.text, " ", sourceLink(f.source, ctx)))))];
+      p.items.map((f) => el("div", {}, el("dt", {}, f.name), el("dd", {}, f.text, " ", sourceLink(f.source, ctx)))))];
   },
 
   text(p, ctx) {
     return [el("h3", {}, p.title), p.body.split(/\n{2,}/).map((para) => el("p", {}, para)),
-      el("p", {}, p.sources.map((s) => sourceLink(s, ctx)))];
+      el("p", {}, sourceLink(p.url, ctx))];
   },
 
   steps(p, ctx) {
@@ -87,7 +88,7 @@ const RENDER = {
 
   checklist(p, ctx) {
     return [el("h3", {}, p.title), el("ul", { class: "check-list" }, p.items.map((t) => el("li", {},
-      el("label", {}, el("input", { type: "checkbox", "data-tick": "", onchange: () => ctx.ticked() }), el("span", {}, t)))))];
+      el("label", {}, el("input", { type: "checkbox", "data-tick": "", onchange: () => ctx.ticked() }), el("span", {}, t.text, " ", sourceLink(t.source, ctx))))))];
   },
 
   draft(p, ctx) {
@@ -101,12 +102,12 @@ const RENDER = {
   },
 
   poll(p) {
-    return [el("h3", {}, p.question), el("div", { class: "poll" }, p.options.map((o, i) =>
+    return [el("h3", {}, p.title), el("div", { class: "poll" }, p.choices.map((o, i) =>
       el("label", {}, el("input", { type: "radio", name: "poll", value: o, ...(i === 0 ? { checked: "" } : {}) }), ` ${o}`)))];
   },
 
   notes(p, ctx) {
-    const box = el("textarea", { class: "notes", placeholder: p.prompt, "aria-label": p.title });
+    const box = el("textarea", { class: "notes", placeholder: p.body, "aria-label": p.title });
     return [el("h3", {}, p.title), box, el("div", { class: "piece-foot" },
       el("button", { type: "button", class: "primary", onclick: () => ctx.emit({ action: "note", text: box.value }) }, "Save"))];
   },

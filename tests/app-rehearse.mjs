@@ -9,6 +9,12 @@ import { launch, openExtensionPage, pageUrl, poll, root, sleep } from "./lib/fir
 const headless = process.argv.includes("--headless");
 const out = join(root, "test-results/app");
 mkdirSync(out, { recursive: true });
+// Refuse to run against a server that's already up: it may be the real AI, on someone's key.
+const taken = await fetch("http://127.0.0.1:4747/api/status", { method: "POST" }).then(() => true, () => false);
+if (taken) {
+  console.error("Something is already running on port 4747 (probably npm start). Quit it first: this test must use its own scripted server.");
+  process.exit(1);
+}
 const server = spawn(process.execPath, ["server/index.mjs", "--rehearse"], { cwd: root, stdio: "ignore" });
 await sleep(800);
 const { browser, close } = await launch({ headless });
