@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Focus Browser</title>
+<link rel="stylesheet" href="showcase.css">
+</head>
+<body>
+<header class="top">
+  <span class="logo">Focus Browser</span>
+  <nav><a href="#video">Video</a><a href="#run">A closer look</a><a href="about.html">About</a></nav>
+</header>
+<main>
+  <section class="hero">
+    <h1>Get online, get it done, get back to your people.</h1>
+    <p>Focus Browser starts by asking what you're trying to do. It builds the screen that task needs, keeps everything else out, and closes when you're done. A working Firefox prototype, with the AI researching live sites.</p>
+  </section>
+
+  <section id="video" class="video">
+    <video controls playsinline preload="metadata" poster="media/poster.jpg">
+      <source src="media/focus-browser.mp4" type="video/mp4">
+      <a href="media/focus-browser.mp4">Download the video</a>
+    </video>
+  </section>
+
+  <section id="run" class="run">
+    <h2>A closer look: fixing a bike</h2>
+    <div class="carousel" aria-roledescription="carousel">
+      <figure class="slide" data-n="1">
+        <img src="run/2-plan.jpg" alt="The plan screen: the request, what counts as done, task time, constraints, sources by category, and the break afterwards">
+        <figcaption><b>The plan.</b> "My road bike's rear gears skip when I pedal hard. Figure out how to fix it myself." becomes terms you can edit: done when every repair step is ticked, 40 minutes, and only these sources. Everything else stays closed.</figcaption>
+      </figure>
+      <figure class="slide" data-n="2" hidden>
+        <img src="run/3-diagnose.jpg" alt="The diagnose screen: three possible causes to pick from, and a checklist of quick checks, each with its source">
+        <figcaption><b>Diagnose.</b> Three likely causes to pick from, and four quick checks. Every line links to the page it came from: Park Tool and Sheldon Brown.</figcaption>
+      </figure>
+      <figure class="slide" data-n="3" hidden>
+        <img src="run/3b-reader.jpg" alt="The Park Tool troubleshooting article open in a side panel, in clean reader view, next to the diagnosis checks">
+        <figcaption><b>Check the source.</b> Click any source and the page opens beside your task, in reader view: just the article, no menus, popups or ads.</figcaption>
+      </figure>
+      <figure class="slide" data-n="4" hidden>
+        <img src="run/3c-original.jpg" alt="The same Park Tool page as the original site, with a region popup and a cookie banner covering it">
+        <figcaption><b>Or see the original.</b> "Show original" loads the real page in the same panel. Here it opens under a region picker and a cookie banner, which is the clutter reader view leaves out.</figcaption>
+      </figure>
+      <figure class="slide" data-n="5" hidden>
+        <img src="run/4-fix.jpg" alt="The fix screen: seven repair steps with sources, and a list of tools to have ready">
+        <figcaption><b>Fix.</b> The screen rebuilds around the repair: seven steps to tick off and the tools to have ready. When every step is ticked, the task is done and the browser closes for a break.</figcaption>
+      </figure>
+      <div class="controls">
+        <button type="button" class="prev" aria-label="Previous">←</button>
+        <span class="count">1 / 5</span>
+        <button type="button" class="next" aria-label="Next">→</button>
+      </div>
+    </div>
+  </section>
+
+  <p class="more"><a href="about.html">Read about the idea</a></p>
+</main>
+<script src="showcase.js"></script>
+</body>
+</html>
